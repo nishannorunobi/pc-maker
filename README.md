@@ -70,6 +70,29 @@ sudo bash ossetup/debian/boot_usb.sh ~/Downloads/ubuntu.iso /dev/sdb   # direct 
 
 ---
 
+## USB Drive Formatter
+
+Format a USB drive with a chosen filesystem.
+
+> **Warning** — all data on the USB will be erased.
+
+```bash
+sudo bash ossetup/debian2debian/format_usbdrive.sh
+```
+
+### Filesystem choices
+
+| # | Filesystem | Best for |
+|---|-----------|----------|
+| 1 | **FAT32** ✅ preferred | General use — works on Windows, Mac, Linux. Files up to 4 GB. |
+| 2 | exFAT | Files larger than 4 GB — works on Windows, Mac, and Linux |
+| 3 | ext4 | Linux-only data drives |
+| 4 | NTFS | Windows-native, read/write on Linux too |
+
+**Last used:** FAT32 (choice 1) — SanDisk 233.1G `/dev/sda`
+
+---
+
 ## Requirements
 
 ```bash
