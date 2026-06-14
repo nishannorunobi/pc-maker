@@ -4,6 +4,14 @@
 #                Outputs the ISO path for use by other scripts.
 set -euo pipefail
 
+# ── Mirror logging ─────────────────────────────────────────────────────────────
+_WS_ROOT="$(d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; while [ ! -d "$d/mountspace" ] && [ "$d" != "/" ]; do d="$(dirname "$d")"; done; echo "$d")"
+if [ -f "$_WS_ROOT/init/create_logging_path.sh" ]; then
+    source "$_WS_ROOT/init/create_logging_path.sh"
+    setup_logging
+fi
+# ──────────────────────────────────────────────────────────────────────────────
+
 # ── Variables — change these to target a different OS ─────────────────────────
 ISO_NAME="linux-lite-7.8-64bit.iso"
 ISO_URL="https://mirror.clarkson.edu/linux-lite/isos/7.8/linux-lite-7.8-64bit.iso"
