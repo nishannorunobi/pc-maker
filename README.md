@@ -184,6 +184,32 @@ bash pchealth/system_info.sh
 
 ---
 
+## Apps — Browsers — Firefox (portable)
+
+Location: `app_util/browsers/firefox/`. A self-contained, portable Firefox you run
+**from this folder** — no system install. Downloads the official Mozilla Linux build
+into `downloads/` (gitignored), runs it with its own profile so it never touches
+your system Firefox.
+
+```bash
+cd app_util/browsers/firefox
+bash download_firefox.sh     # fetch latest Firefox (linux64) → downloads/firefox/
+bash start.sh                # run it (auto-downloads if missing); own profile, --no-remote
+bash stop.sh                 # stop only this portable Firefox (matched by its unique path)
+bash clean.sh                # stop + wipe downloads/ so you can download fresh
+```
+
+| Script | Does |
+|--------|------|
+| `download_firefox.sh` | Downloads + extracts latest Firefox into `downloads/firefox/` (`FORCE=1` re-downloads) |
+| `start.sh` | Launches it with a local `downloads/profile`; auto-downloads if not present |
+| `stop.sh` | `pkill` by the binary's absolute path — your system Firefox is untouched |
+| `clean.sh` | Stops it and removes `downloads/` (regenerable) |
+
+`app_util/browsers/firefox/downloads/` is gitignored (`firefox/.gitignore`).
+
+---
+
 ## Notes
 
 - `*.iso` files are excluded from git (see `.gitignore`)
