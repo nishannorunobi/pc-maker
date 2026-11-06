@@ -29,8 +29,10 @@ pc-maker/
 │   ├── docker_install.sh                    ← install Docker (Debian / Ubuntu-based, safe to repeat)
 │   ├── docker_status.sh                     ← is Docker ready? (looks only)
 │   ├── docker.conf                          ← default repo for an unknown OS
-│   ├── lib/docker_common.sh                 ← shared functions
-│   └── tests/test_dockerspace.sh            ← auto tests (fakes only)
+│   ├── lib/                                 ← docker_common.sh · run_tool.sh (shared functions)
+│   ├── jdk/                                 ← java.sh · javac.sh (JDK 21, throwaway container)
+│   ├── maven/                               ← mvn.sh (Maven 3.9)
+│   └── tests/                               ← auto tests (fakes only)
 ├── pchealth/                                ← system monitoring scripts
 │   ├── disk_health.sh                       ← disk usage and storage report
 │   └── system_info.sh                       ← full system overview
@@ -123,7 +125,8 @@ Everything Docker is in [dockerspace/](dockerspace/README.md):
 
 ```bash
 bash dockerspace/docker_install.sh     # install (asks for sudo itself, safe to repeat)
-bash dockerspace/docker_status.sh      # check: installed · running · docker group
+bash dockerspace/docker_status.sh      # check: installed · running · docker group · tools
+bash dockerspace/jdk/java.sh Hello.java   # a tool, nothing installed (throwaway container)
 ```
 
 `install_required_utility.sh` runs `dockerspace/docker_install.sh` as its last step.

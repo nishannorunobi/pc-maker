@@ -105,7 +105,7 @@ reset installed running group
 out="$(bash "$STATUS" 2>&1)"; check "D15 status: in group, not in this login → log out + in" "$out" "pending" "log out"
 
 reset installed running group session
-out="$(bash "$STATUS" 2>&1)"; check "D16 status: all ok · no tools yet" "$out" "without sudo" "none yet" "!→ bash"
+out="$(bash "$STATUS" 2>&1)"; check "D16 status: all ok · tools listed" "$out" "without sudo" "jdk" "maven" "!→ bash"
 
 reset installed group session
 out="$(bash "$STATUS" 2>&1)"; check "D17 status: not running → fix hint" "$out" "running" "docker_install.sh"

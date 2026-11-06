@@ -1,2 +1,5 @@
 *.iso
 *.zip
+
+# dockerspace: what the tools keep between runs (maven libraries …)
+dockerspace/.cache/
