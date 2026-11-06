@@ -37,7 +37,7 @@ esac
 
 ME="${REAL_USER:-$USER}"
 FIX="bash dockerspace/docker_install.sh"
-row() { printf "  ${BOLD}%-12s${RESET} %b\n" "$1" "$2"; }
+row() { printf "  ${BOLD}%-15s${RESET} %b\n" "$1" "$2"; }
 
 echo ""
 echo -e "${BOLD}Docker on this PC${RESET}"
@@ -65,16 +65,16 @@ else
     row "group" "${RED}no${RESET}  → $FIX"
 fi
 
-# ── tool images: one per dockerspace/<tool>/tool.conf (a new tool = a new folder) ─
+# ── tool images: one per tool.conf — dockerspace/<tool>/ or <tool>/<version>/ (a new tool = a new folder) ─
 shopt -s nullglob
-CONFS=("$DOCKERSPACE_DIR"/*/tool.conf)
+CONFS=("$DOCKERSPACE_DIR"/*/tool.conf "$DOCKERSPACE_DIR"/*/*/tool.conf)
 if [ ${#CONFS[@]} -eq 0 ]; then
     row "tools" "none yet (a tool = dockerspace/<tool>/tool.conf)"
 elif [ -z "$GROUP_OK" ] || ! docker_running; then
     row "tools" "${YELLOW}not checked${RESET} — Docker must run and the group must work first"
 else
     for conf in "${CONFS[@]}"; do
-        tool="$(basename "$(dirname "$conf")")"
+        tool="$(dirname "${conf#"$DOCKERSPACE_DIR"/}")"
         image="$(sed -n 's/^IMAGE=//p' "$conf" | head -1)"
         if [ -z "$image" ]; then
             row "$tool" "${YELLOW}no IMAGE= line${RESET} in $tool/tool.conf"

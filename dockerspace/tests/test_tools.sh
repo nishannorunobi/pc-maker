@@ -49,34 +49,34 @@ run_in() { (cd "$PROJ" && bash "$@" 2>&1 </dev/null); }
 args()   { tr '\n' ' ' < "$ARGS" 2>/dev/null; }
 
 # ── tests ─────────────────────────────────────────────────────────────────────
-n=0; for f in "$DS/lib/run_tool.sh" "$DS/jdk/java.sh" "$DS/jdk/javac.sh" "$DS/maven/mvn.sh" "$0"; do bash -n "$f" || n=1; done
+n=0; for f in "$DS/lib/run_tool.sh" "$DS"/jdk/jdk*/*.sh "$DS"/maven/maven*/*.sh "$0"; do bash -n "$f" || n=1; done
 [ $n -eq 0 ] && ok "T1 bash -n on every script" || bad "T1 bash -n"
 
-for s in jdk/java.sh jdk/javac.sh maven/mvn.sh; do
+for s in jdk/jdk21/java.sh jdk/jdk21/javac.sh jdk/jdk25/java.sh jdk/jdk25/javac.sh maven/maven3.8/mvn.sh maven/maven3.9/mvn.sh; do
     check "T2 --help $s" "$(bash "$DS/$s" --help)" "Usage" "throwaway container" "!FAKE-RUN"
 done
 
 reset $READY
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"
 check "T3 java.sh: first use → downloaded once, then run" "$out $(cat "$ST/calls")" "downloading eclipse-temurin:21-jdk" "pull -q eclipse-temurin:21-jdk" "FAKE-RUN"
 check "T4 java.sh: docker run --rm · as you · same folder · HOME · image · command" "$(args)" \
     "run --rm -i --user 4242:4343 -e HOME=/tmp/home -v $PROJ:$PROJ -w $PROJ eclipse-temurin:21-jdk java Hello.java" "! -t "
 
 reset $READY image
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"
 check "T5 image already here → no download" "$out" "FAKE-RUN" "!downloading"
 [ ! -f "$ST/calls" ] && ok "T5b no pull / build" || bad "T5b" "$(cat "$ST/calls")"
 
 reset $READY image
-run_in "$DS/jdk/javac.sh" "My File.java" -d out >/dev/null
+run_in "$DS/jdk/jdk21/javac.sh" "My File.java" -d out >/dev/null
 grep -qx "My File.java" "$ARGS" && check "T6 javac.sh: arguments kept as they are (spaces)" "$(args)" "eclipse-temurin:21-jdk javac My File.java -d out" \
     || bad "T6 'My File.java' split" "$(cat "$ARGS")"
 
 reset $READY image
-run_in "$DS/maven/mvn.sh" package >/dev/null
+run_in "$DS/maven/maven3.9/mvn.sh" package >/dev/null
 check "T7 mvn.sh: cache kept · MAVEN_CONFIG · user.home" "$(args)" \
-    "-v $TMP/cache/maven:/tmp/home/.m2" "-e MAVEN_CONFIG=/tmp/home/.m2" "maven:3.9-eclipse-temurin-21 mvn -Duser.home=/tmp/home package"
-[ -d "$TMP/cache/maven" ] && ok "T7b cache folder made (dockerspace/.cache/maven)" || bad "T7b no cache folder"
+    "-v $TMP/cache/maven/maven3.9:/tmp/home/.m2" "-e MAVEN_CONFIG=/tmp/home/.m2" "maven:3.9-eclipse-temurin-25 mvn -Duser.home=/tmp/home package"
+[ -d "$TMP/cache/maven/maven3.9" ] && ok "T7b cache folder made (dockerspace/.cache/maven/maven3.9)" || bad "T7b no cache folder"
 
 # a new tool = a new folder — nothing in lib/ changes
 mkdir -p "$DS/zz-testtool"; : > "$DS/zz-testtool/tool.conf"
@@ -95,28 +95,44 @@ check "T10 Dockerfile in the tool folder → built, not downloaded" "$out $(cat 
 rm -rf "$DS/zz-testtool"
 
 reset
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"; rc=$?
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"; rc=$?
 check "T11 no Docker (no terminal) → says docker_install.sh, exit 1, nothing run" "$out rc=$rc" "not installed" "docker_install.sh" "rc=1" "!FAKE-RUN" "!Installing"
 
 reset installed group session
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"; rc=$?
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"; rc=$?
 check "T12 Docker stopped → says so, exit 1" "$out rc=$rc" "not running" "rc=1" "!FAKE-RUN"
 
 reset installed running group
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"; rc=$?
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"; rc=$?
 check "T13 group not active yet → log out + in, exit 1" "$out rc=$rc" "log out and back in" "rc=1" "!FAKE-RUN"
 
 reset installed running
-out="$(run_in "$DS/jdk/java.sh" Hello.java)"; rc=$?
+out="$(run_in "$DS/jdk/jdk21/java.sh" Hello.java)"; rc=$?
 check "T14 not in the docker group → docker_install.sh adds you" "$out rc=$rc" "not in the docker group" "rc=1" "!FAKE-RUN"
 
 reset $READY image
-out="$(cd / && bash "$DS/jdk/java.sh" Hello.java 2>&1 </dev/null)"; rc=$?
+out="$(cd / && bash "$DS/jdk/jdk21/java.sh" Hello.java 2>&1 </dev/null)"; rc=$?
 check "T15 run from / → refused (/ is never given to a tool)" "$out rc=$rc" "not /" "rc=1" "!FAKE-RUN"
 
 reset $READY
 out="$(bash "$DS/docker_status.sh" 2>&1)"
-check "T16 docker_status.sh lists jdk + maven from their tool.conf" "$out" "jdk" "eclipse-temurin:21-jdk" "maven" "maven:3.9-eclipse-temurin-21"
+check "T16 docker_status.sh lists every version folder from its tool.conf" "$out" \
+    "jdk/jdk21" "eclipse-temurin:21-jdk" "jdk/jdk25" "eclipse-temurin:25-jdk" \
+    "maven/maven3.8" "maven:3.8-eclipse-temurin-21" "maven/maven3.9" "maven:3.9-eclipse-temurin-25"
+
+# T18: each version folder runs ITS image, with its own cache
+for v in 21 25; do
+    reset $READY image
+    run_in "$DS/jdk/jdk$v/java.sh" -version >/dev/null
+    check "T18 jdk/jdk$v/java.sh → eclipse-temurin:$v-jdk" "$(args)" "eclipse-temurin:$v-jdk java -version"
+done
+for mv in "3.8 21" "3.9 25"; do set -- $mv
+    reset $READY image
+    run_in "$DS/maven/maven$1/mvn.sh" -v >/dev/null
+    check "T18 maven/maven$1/mvn.sh → maven:$1-eclipse-temurin-$2 · cache maven/maven$1" "$(args)" \
+        "maven:$1-eclipse-temurin-$2 mvn" "-v $TMP/cache/maven/maven$1:/tmp/home/.m2"
+done
+[ ! -e "$DS/jdk/java.sh" ] && [ ! -e "$DS/maven/mvn.sh" ] && [ ! -e "$DS/maven/jdk21" ] && ok "T19 no old jdk/java.sh · maven/mvn.sh · maven/jdk21 left" || bad "T19 old scripts still there"
 
 grep -qx "dockerspace/.cache/" "$DS/../.gitignore" && ok "T17 dockerspace/.cache/ is git-ignored" || bad "T17 .gitignore"
 
