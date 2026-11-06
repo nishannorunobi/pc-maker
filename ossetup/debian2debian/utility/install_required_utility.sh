@@ -32,7 +32,7 @@ SCRIPTS=(
     "guake_for_terminal.sh"
     "chrome_install.sh"
     "vscode_install.sh"
-    "docker_install.sh"
+    "../../../dockerspace/docker_install.sh"   # Docker lives in dockerspace/
 )
 
 echo ""

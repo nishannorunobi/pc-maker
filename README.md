@@ -24,8 +24,13 @@ pc-maker/
 │           ├── xclip_for_copy.sh
 │           ├── guake_for_terminal.sh
 │           ├── chrome_install.sh
-│           ├── vscode_install.sh
-│           └── docker_install.sh
+│           └── vscode_install.sh
+├── dockerspace/                             ← EVERYTHING Docker (see dockerspace/README.md)
+│   ├── docker_install.sh                    ← install Docker (Debian / Ubuntu-based, safe to repeat)
+│   ├── docker_status.sh                     ← is Docker ready? (looks only)
+│   ├── docker.conf                          ← default repo for an unknown OS
+│   ├── lib/docker_common.sh                 ← shared functions
+│   └── tests/test_dockerspace.sh            ← auto tests (fakes only)
 ├── pchealth/                                ← system monitoring scripts
 │   ├── disk_health.sh                       ← disk usage and storage report
 │   └── system_info.sh                       ← full system overview
@@ -112,6 +117,19 @@ sudo bash ossetup/debian2debian/format_usbdrive.sh
 
 ---
 
+## Docker
+
+Everything Docker is in [dockerspace/](dockerspace/README.md):
+
+```bash
+bash dockerspace/docker_install.sh     # install (asks for sudo itself, safe to repeat)
+bash dockerspace/docker_status.sh      # check: installed · running · docker group
+```
+
+`install_required_utility.sh` runs `dockerspace/docker_install.sh` as its last step.
+
+---
+
 ## Utility Installers
 
 ### Install all at once
@@ -132,7 +150,6 @@ Runs all installers in order, prints a pass/fail summary at the end.
 | `guake_for_terminal.sh` | Guake drop-down terminal + autostart on login |
 | `chrome_install.sh` | Google Chrome browser |
 | `vscode_install.sh` | Visual Studio Code |
-| `docker_install.sh` | Docker Engine + Compose plugin |
 
 Each script is standalone — run any one individually:
 
